@@ -1,10 +1,145 @@
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+public class UniversityCourseManagementSystem {
+    private static Student student;
+    private static Professor professor;
+    private static Course course;
+    protected static Scanner input = new Scanner(System.in);
+    /**
+     * Entry point of a program
+     * @param args - console data
+     */
+    public static void main(String[] args) {
+        fillInitialData();
+
+        while (input.hasNextLine()) {
+            String currentCommand = input.nextLine();
+            if (currentCommand.isEmpty()) {
+                return;
+            }
+
+            switch (currentCommand) {
+                case "course":
+                    addCourse();
+                    System.out.println("Added successfully");
+                    break;
+                case "student":
+                    String studentName = input.nextLine();
+                    if (!nameValidate(studentName)) {
+                        int errorCode = 9;
+                        exitWithError("Wrong inputs", errorCode);
+                    }
+                    student = new Student(studentName);
+
+                    System.out.println("Added successfully");
+                    break;
+                case "professor":
+                    String professorName = input.nextLine();
+                    if (!nameValidate(professorName)) {
+                        int errorCode = 9;
+                        exitWithError("Wrong inputs", errorCode);
+                    }
+                    professor = new Professor(professorName);
+
+                    System.out.println("Added successfully");
+                    break;
+                case "enroll":
+                    try {
+                        int memberNumber = Integer.parseInt(input.nextLine());
+                        int courseNumber = Integer.parseInt(input.nextLine());
+                    } catch (NumberFormatException e) {
+                        exitWithError("Wrong inputs", 9);
+                    }
+
+                case "drop":
+                    break;
+                case "teach":
+                    break;
+                case "exempt":
+                    break;
+                default:
+                    exitWithError("Wrong inputs", 9);
+            }
+        }
+    }
+
+    private static boolean nameValidate(String name) {
+        Pattern pattern = Pattern.compile("[A-Za-z]+");
+        Matcher matcher = pattern.matcher(name);
+        return matcher.matches();
+    }
+
+    /*
+    Function to fill initial data (courses, students and professors)
+     */
+    public static void fillInitialData() {
+        List<Course> aliceCourses = new ArrayList<>();
+        List<Course> bobCourses = new ArrayList<>();
+        List<Course> alexCourses = new ArrayList<>();
+        // Add initial courses
+        course = new Course("java_beginner", CourseLevel.BACHELOR);
+        aliceCourses.add(course);
+        bobCourses.add(course);
+        course = new Course("java_intermediate", CourseLevel.BACHELOR);
+        aliceCourses.add(course);
+        course = new Course("python_basics", CourseLevel.BACHELOR);
+        aliceCourses.add(course);
+        course = new Course("algorithms", CourseLevel.MASTER);
+        bobCourses.add(course);
+        course = new Course("advanced_programming", CourseLevel.MASTER);
+        alexCourses.add(course);
+        course = new Course("mathematical_analysis", CourseLevel.MASTER);
+        course = new Course("computer_vision", CourseLevel.MASTER);
+
+        // Add initial students
+        student = new Student("Alice");
+        student.setEnrolledCourses(aliceCourses);
+        student = new Student("Bob");
+        student.setEnrolledCourses(bobCourses);
+        student = new Student("Alex");
+        student.setEnrolledCourses(alexCourses);
+        // Add initial professors
+        professor = new Professor("Ali");
+        professor = new Professor("Ahmed");
+        professor = new Professor("Andrey");
+    }
+
+    static void addCourse() {
+        String courseName = input.nextLine();
+        String courseLevel = input.nextLine();
+
+        if (!courseValidate(courseName, courseLevel)) {
+            exitWithError("Wrong inputs", 9);
+        }
+        course = new Course(courseName, courseLevel.equals("bachelor") ? CourseLevel.BACHELOR : CourseLevel.MASTER);
+    }
+
+    /**
+     * Checking the course name for specified conditions
+     * @param name course name from input
+     * @return test result
+     */
+    static boolean courseValidate(String name, String level) {
+        Pattern pattern = Pattern.compile("[A-Za-z]+(_[A-Za-z]+)*");
+        Matcher matcher = pattern.matcher(name);
+
+        boolean nameValidate = matcher.matches();
+        boolean levelValidate = level.equals("bachelor") || level.equals("master");
+
+        return nameValidate && levelValidate;
+    }
+
+
+
+    static void exitWithError(String errorMessage, int errorCode) {
+        System.out.println(errorMessage);
+        System.exit(errorCode);
+    }
+}
 
 enum CourseLevel {
     BACHELOR,
@@ -69,7 +204,9 @@ class Student extends UniversityMember implements Enrollable {
     }
     @Override
     public boolean enroll(Course course) {
-        if (!this.enrolledCourses.contains(course) && this.enrolledCourses.size() + 1 <= MAX_ENROLLMENT && !course.isFull()) {
+        if (!this.enrolledCourses.contains(course)
+                && this.enrolledCourses.size() + 1 <= MAX_ENROLLMENT
+                && !course.isFull()) {
             this.enrolledCourses.add(course);
             List<Student> courseEnrolled = course.getEnrolledStudents();
             courseEnrolled.add(this);
@@ -81,7 +218,7 @@ class Student extends UniversityMember implements Enrollable {
 }
 class Course {
     private static final int CAPACITY = 3;
-    private static int NumberOfCourses;
+    private static int numberOfCourses;
     private int courseId;
     private String courseName;
     private List<Student> enrolledStudents;
@@ -97,15 +234,15 @@ class Course {
     }
 
     public boolean isFull() {
-        return CAPACITY == NumberOfCourses;
+        return CAPACITY == numberOfCourses;
     }
 
     public static int getNumberOfCourses() {
-        return NumberOfCourses;
+        return numberOfCourses;
     }
 
     public static void setNumberOfCourses(int numberOfCourses) {
-        NumberOfCourses = numberOfCourses;
+        Course.numberOfCourses = numberOfCourses;
     }
 
     public int getCourseId() {
@@ -175,137 +312,5 @@ class Professor extends UniversityMember {
             return true;
         }
         return false;
-    }
-}
-
-public class UniversityCourseManagementSystem {
-    static Student student;
-    static Professor professor;
-    static Course course;
-    static Scanner input = new Scanner(System.in);
-    /**
-     * Entry point of a program
-     * @param args - console data
-     */
-    public static void main(String[] args) {
-        fillInitialData();
-
-        while (input.hasNextLine()) {
-            String currentCommand = input.nextLine();
-            if (currentCommand.equals("")) return;
-
-            switch (currentCommand) {
-                case "course":
-                    addCourse();
-                    System.out.println("Added successfully");
-                    break;
-                case "student":
-                    String studentName = input.nextLine();
-                    if (!nameValidate(studentName)) exitWithError("Wrong inputs", 9);
-                    student = new Student(studentName);
-
-                    System.out.println("Added successfully");
-                    break;
-                case "professor":
-                    String professorName = input.nextLine();
-                    if (!nameValidate(professorName)) exitWithError("Wrong inputs", 9);
-                    professor = new Professor(professorName);
-
-                    System.out.println("Added successfully");
-                    break;
-                case "enroll":
-                    try {
-                        int memberNumber = Integer.parseInt(input.nextLine());
-                        int courseNumber = Integer.parseInt(input.nextLine());
-
-                        if (!student.getUniversityStudents().containsKey(memberNumber) || !course.getUniversityCourses().containsKey(courseNumber)) exitWithError("Wrong inputs", 9);
-                        student.getUniversityStudents().get(memberNumber).enroll(course.getUniversityCourses().get(courseNumber));
-                        System.out.println("Enrolled successfully");
-
-                    } catch (NumberFormatException e) {
-                        exitWithError("Wrong inputs", 9);
-                    }
-
-                case "drop":
-                    break;
-                case "teach":
-                    break;
-                case "exempt":
-                    break;
-                default:
-                    exitWithError("Wrong inputs", 9);
-            }
-        }
-    }
-
-    private static boolean nameValidate(String name) {
-        Pattern pattern = Pattern.compile("[A-Za-z]+");
-        Matcher matcher = pattern.matcher(name);
-        return matcher.matches();
-    }
-
-    /*
-    Function to fill initial data (courses, students and professors)
-     */
-    public static void fillInitialData() {
-        List<Course> aliceCourses = new ArrayList<>();
-        List<Course> bobCourses = new ArrayList<>();
-        List<Course> alexCourses = new ArrayList<>();
-        // Add initial courses
-        course = new Course("java_beginner", CourseLevel.BACHELOR);
-        aliceCourses.add(course);
-        bobCourses.add(course);
-        course = new Course("java_intermediate", CourseLevel.BACHELOR);
-        aliceCourses.add(course);
-        course = new Course("python_basics", CourseLevel.BACHELOR);
-        aliceCourses.add(course);
-        course = new Course("algorithms", CourseLevel.MASTER);
-        bobCourses.add(course);
-        course = new Course("advanced_programming", CourseLevel.MASTER);
-        alexCourses.add(course);
-        course = new Course("mathematical_analysis", CourseLevel.MASTER);
-        course = new Course("computer_vision", CourseLevel.MASTER);
-
-        // Add initial students
-        student = new Student("Alice");
-        student.setEnrolledCourses(aliceCourses);
-        student = new Student("Bob");
-        student.setEnrolledCourses(bobCourses);
-        student = new Student("Alex");
-        student.setEnrolledCourses(alexCourses);
-        // Add initial professors
-        professor = new Professor("Ali");
-        professor = new Professor("Ahmed");
-        professor = new Professor("Andrey");
-    }
-
-    static void addCourse() {
-        String courseName = input.nextLine();
-        String courseLevel = input.nextLine();
-
-        if (!courseValidate(courseName, courseLevel)) exitWithError("Wrong inputs", 9);
-        course = new Course(courseName, courseLevel.equals("bachelor") ? CourseLevel.BACHELOR : CourseLevel.MASTER);
-    }
-
-    /**
-     * Checking the course name for specified conditions
-     * @param name course name from input
-     * @return test result
-     */
-    static boolean courseValidate(String name, String level) {
-        Pattern pattern = Pattern.compile("[A-Za-z]+(_[A-Za-z]+)*");
-        Matcher matcher = pattern.matcher(name);
-
-        boolean nameValidate = matcher.matches();
-        boolean levelValidate = level.equals("bachelor") || level.equals("master");
-
-        return nameValidate && levelValidate;
-    }
-
-
-
-    static void exitWithError(String errorMessage, int errorCode) {
-        System.out.println(errorMessage);
-        System.exit(errorCode);
     }
 }
